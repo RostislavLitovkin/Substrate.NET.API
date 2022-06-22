@@ -107,7 +107,7 @@ namespace Ajuna.NetApi
         /// <returns> An asynchronous result. </returns>
         public async Task ConnectAsync()
         {
-            await ConnectAsync(true, CancellationToken.None);
+            await ConnectAsync(true, true, true, CancellationToken.None);
         }
 
         /// <summary> Connects an asynchronous. </summary>
@@ -115,14 +115,14 @@ namespace Ajuna.NetApi
         /// <returns> An asynchronous result. </returns>
         public async Task ConnectAsync(CancellationToken token)
         {
-            await ConnectAsync(true, token);
+            await ConnectAsync(true, true, true, token);
         }
 
         /// <summary> Connects an asynchronous. </summary>
         /// <remarks> 19.09.2020. </remarks>
         /// <param name="token"> A token that allows processing to be cancelled. </param>
         /// <returns> An asynchronous result. </returns>
-        public async Task ConnectAsync(bool useMetaData, CancellationToken token)
+        public async Task ConnectAsync(bool useMetaData, bool poolGenesisHash, bool poolRuntimeVersion, CancellationToken token)
         {
             if (_socket != null && _socket.State == WebSocketState.Open)
                 return;
@@ -171,13 +171,19 @@ namespace Ajuna.NetApi
                 Logger.Debug("MetaData parsed.");
             }
 
-            var genesis = new BlockNumber();
-            genesis.Create(0);
-            GenesisHash = await Chain.GetBlockHashAsync(genesis, token);
-            Logger.Debug("Genesis hash parsed.");
+            if (poolGenesisHash)
+            {
+                var genesis = new BlockNumber();
+                genesis.Create(0);
+                GenesisHash = await Chain.GetBlockHashAsync(genesis, token);
+                Logger.Debug("Genesis hash parsed.");
+            }
 
-            RuntimeVersion = await State.GetRuntimeVersionAsync(token);
-            Logger.Debug("Runtime version parsed.");
+            if (poolRuntimeVersion)
+            {
+                RuntimeVersion = await State.GetRuntimeVersionAsync(token);
+                Logger.Debug("Runtime version parsed.");
+            }
 
             _jsonRpc.TraceSource.Switch.Level = SourceLevels.All;
         }
@@ -300,7 +306,7 @@ namespace Ajuna.NetApi
         /// <param name="parameters"> Options for controlling the operation. </param>
         /// <param name="token">      A token that allows processing to be cancelled. </param>
         /// <returns> A T. </returns>
-        internal async Task<T> InvokeAsync<T>(string method, object parameters, CancellationToken token)
+        public async Task<T> InvokeAsync<T>(string method, object parameters, CancellationToken token)
         {
             if (_socket?.State != WebSocketState.Open)
                 throw new ClientNotConnectedException($"WebSocketState is not open! Currently {_socket?.State}!");

@@ -88,7 +88,9 @@ namespace Ajuna.NetExt.Test
         [Test]
         public async Task GetMethodChainNameTestAsync()
         {
-            await _client.ConnectAsync(false, CancellationToken.None);
+            var cts = new CancellationTokenSource();
+
+            await _client.ConnectAsync(cts.Token);
 
             var result = await _client.GetMethodAsync<string>("system_chain");
             Assert.AreEqual("Ajuna Dev Testnet", result);
@@ -103,7 +105,7 @@ namespace Ajuna.NetExt.Test
 
             var cts = new CancellationTokenSource();
 
-            await _client.ConnectAsync(false, cts.Token);
+            await _client.ConnectAsync(cts.Token);
 
             var accountAlice = new AccountId32();
             accountAlice.Create(Utils.GetPublicKeyFrom(Alice.Value));
