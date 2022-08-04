@@ -4,7 +4,6 @@ using Ajuna.NetApi.Model.Dot4gravity;
 using Ajuna.NetApi.Model.PalletBoard;
 using Ajuna.NetApi.Model.SpCore;
 using Ajuna.NetApi.Model.Types.Primitive;
-using Ajuna.NetApiExt.Model.AjunaWorker.Dot4G;
 using System;
 using System.Collections.Generic;
 using System.Linq;

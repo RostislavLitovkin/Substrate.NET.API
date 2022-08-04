@@ -7,14 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ajuna.NetApi" Version="0.1.8" />
+    <PackageReference Include="Ajuna.NetApi" Version="0.1.19" />
     <PackageReference Include="nunit" Version="3.13.3" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Ajuna.NetApi - Orginal\Ajuna.NetApi\Ajuna.NetApi.csproj" />
     <ProjectReference Include="..\Ajuna.NetWallet\Ajuna.NetWallet.csproj" />
   </ItemGroup>
 

@@ -1,16 +1,10 @@
 ﻿using Ajuna.NetApi;
-using Ajuna.NetApi.Model.AjunaCommon;
-using Ajuna.NetApi.Model.Base;
-using Ajuna.NetApiExt.Model.AjunaWorker.Dot4G;
 using Ajuna.NetWallet;
 using Ajuna.UnityInterface;
 using Dot4GBot.AI;
-using NLog;
-using NLog.Config;
-using NLog.Targets;
+using Serilog;
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,54 +15,44 @@ namespace Dot4GBot
         private static string _nodeUrl = "ws://127.0.0.1:9944";
         private static string _ngrokUrl = "ws://0082-84-75-48-249.ngrok.io";
         private static string _mrenclave = "2WTKarArPH1jxUCCDMbLvmDKG9UiPZxfBrb2eQUWyU3K";
+
         private static Random _random = new Random();
 
         private static async Task Main(string[] args)
         {
-            var config = new LoggingConfiguration();
+            // configure serilog
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo
+                .Console()
+                .CreateLogger();
 
-            // Targets where to log to: File and Console
-            var logfile = new FileTarget("logfile")
-            {
-                FileName = "log.txt",
-                DeleteOldFileOnStartup = true
-            };
+            //Console.Write("\r\nNODE URL[" + _nodeUrl + "]=: ");
+            //var nodeUrl = Console.ReadLine();
+            //if (nodeUrl.Count() > 0)
+            //{
+            //    _nodeUrl = nodeUrl;
+            //}
+            //Console.WriteLine($"=> '{_nodeUrl}'");
 
-            var logconsole = new ConsoleTarget("logconsole");
+            //Console.Write("\r\nNGROK URL[" + _ngrokUrl + "]=: ");
+            //var ngrokUrl = Console.ReadLine();
+            //if (ngrokUrl.Count() > 0)
+            //{
+            //    _ngrokUrl = ngrokUrl;
+            //}
+            //Console.WriteLine($"=> '{_ngrokUrl}'");
 
-            // Rules for mapping loggers to targets            
-            //config.AddRule(LogLevel.Info, LogLevel.Fatal, logconsole);
-            config.AddRule(LogLevel.Trace, LogLevel.Fatal, logfile);
+            //Console.Write("\r\nMRENCLAVE[" + _mrenclave + "]=: ");
+            //var mrenclave = Console.ReadLine();
+            //if (mrenclave.Count() > 0)
+            //{
+            //    _mrenclave = mrenclave;
+            //}
+            //Console.WriteLine($"=> '{_mrenclave}'");
 
-            // Apply config           
-            LogManager.Configuration = config;
-
-            Console.Write("\r\nNODE URL[" + _nodeUrl + "]=: ");
-            var nodeUrl = Console.ReadLine();
-            if (nodeUrl.Count() > 0)
-            {
-                _nodeUrl = nodeUrl;
-            }
-            Console.WriteLine($"=> '{_nodeUrl}'");
-
-            Console.Write("\r\nNGROK URL[" + _ngrokUrl + "]=: ");
-            var ngrokUrl = Console.ReadLine();
-            if (ngrokUrl.Count() > 0)
-            {
-                _ngrokUrl = ngrokUrl;
-            }
-            Console.WriteLine($"=> '{_ngrokUrl}'");
-
-            Console.Write("\r\nMRENCLAVE[" + _mrenclave + "]=: ");
-            var mrenclave = Console.ReadLine();
-            if (mrenclave.Count() > 0)
-            {
-                _mrenclave = mrenclave;
-            }
-            Console.WriteLine($"=> '{_mrenclave}'");
-
-            Console.WriteLine($"Let's play!");
-            Thread.Sleep(1000);
+            //Console.WriteLine($"Let's play!");
+            //Thread.Sleep(1000);
 
             // Add this to your C# console app's Main method to give yourself
             // a CancellationToken that is canceled when the user hits Ctrl+C.
@@ -90,7 +74,8 @@ namespace Dot4GBot
                 // This is the normal way we close.
             }
 
-            Console.ReadLine();
+            // Finally, once just before the application exits...
+            Log.CloseAndFlush();
         }
 
         private static async Task MainAsync(CancellationToken token)

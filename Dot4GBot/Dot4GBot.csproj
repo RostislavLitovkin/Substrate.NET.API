@@ -6,20 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NLog" Version="4.7.11" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Ajuna.UnityInterface\Ajuna.UnityInterface.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="dev_wallet.dat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="dev_walletB.dat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+  <ItemGroup></ItemGroup>
 
 </Project>

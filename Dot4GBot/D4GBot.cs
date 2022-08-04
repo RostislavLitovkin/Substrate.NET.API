@@ -1,5 +1,4 @@
 ﻿using Ajuna.NetApi.Model.AjunaCommon;
-using Ajuna.NetApi.Model.Base;
 using Ajuna.NetApi.Model.Dot4gravity;
 using Ajuna.NetApiExt.Model.AjunaWorker.Dot4G;
 using Ajuna.NetWallet;

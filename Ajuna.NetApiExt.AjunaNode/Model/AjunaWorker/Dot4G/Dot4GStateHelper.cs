@@ -1,9 +1,6 @@
-﻿using Ajuna.NetApi.Model.Base;
-using Ajuna.NetApi.Model.Dot4gravity;
-using System;
+﻿using Ajuna.NetApi.Model.Dot4gravity;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Ajuna.NetApiExt.Model.AjunaWorker.Dot4G
 {

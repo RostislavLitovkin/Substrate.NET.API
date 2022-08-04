@@ -1,5 +1,4 @@
-﻿using Ajuna.NetApi.Model.SpCore;
-using Ajuna.NetApi.Model.SpRuntime;
+﻿using Ajuna.NetApi.Model.SpRuntime;
 using Ajuna.NetApi.Model.Types.Base;
 using System.Collections.Generic;
 

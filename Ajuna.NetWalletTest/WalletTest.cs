@@ -5,11 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Ajuna.NetApi;
-using Ajuna.NetApi.Model.Rpc;
 using Ajuna.NetApi.Model.Types.Base;
 using Ajuna.NetWallet;
 using Ajuna.NetApi.Model.FrameSystem;
-using Ajuna.NetApi.Model.Types.Primitive;
 using Schnorrkel.Keys;
 using Ajuna.NetApi.Model.Types;
 

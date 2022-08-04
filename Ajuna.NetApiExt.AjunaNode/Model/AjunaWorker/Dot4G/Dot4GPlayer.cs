@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Ajuna.NetApiExt.Model.AjunaWorker.Dot4G
+﻿namespace Ajuna.NetApiExt.Model.AjunaWorker.Dot4G
 {
     public class Dot4GPlayer
     {

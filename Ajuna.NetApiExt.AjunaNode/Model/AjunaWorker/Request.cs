@@ -1,9 +1,6 @@
 ﻿using Ajuna.NetApi.Model.PrimitiveTypes;
-using Ajuna.NetApi.Model.SpCore;
-using Ajuna.NetApi.Model.SpRuntime;
 using Ajuna.NetApi.Model.Types.Base;
 using Ajuna.NetApi.Model.Types.Primitive;
-using System;
 using System.Collections.Generic;
 
 

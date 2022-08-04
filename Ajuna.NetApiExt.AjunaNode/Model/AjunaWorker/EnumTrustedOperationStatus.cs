@@ -1,7 +1,5 @@
 ﻿using Ajuna.NetApi.Model.PrimitiveTypes;
 using Ajuna.NetApi.Model.Types.Base;
-using System;
-using System.Collections.Generic;
 
 
 namespace Ajuna.NetApi.Model.AjunaWorker

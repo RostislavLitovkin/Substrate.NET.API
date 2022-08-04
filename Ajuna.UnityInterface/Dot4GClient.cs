@@ -1,7 +1,6 @@
 ﻿using Ajuna.NetApi;
 using Ajuna.NetApi.Model.AjunaCommon;
 using Ajuna.NetApi.Model.AjunaWorker;
-using Ajuna.NetApi.Model.Base;
 using Ajuna.NetApi.Model.Dot4gravity;
 using Ajuna.NetApi.Model.Extrinsics;
 using Ajuna.NetApi.Model.Rpc;
@@ -15,7 +14,6 @@ using Ajuna.NetWallet;
 using Schnorrkel.Keys;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;

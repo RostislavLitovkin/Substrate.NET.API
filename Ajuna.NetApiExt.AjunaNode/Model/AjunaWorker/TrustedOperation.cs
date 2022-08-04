@@ -1,6 +1,4 @@
-﻿using Ajuna.NetApi.Model.SpCore;
-using Ajuna.NetApi.Model.Types.Base;
-using System;
+﻿using Ajuna.NetApi.Model.Types.Base;
 
 
 namespace Ajuna.NetApi.Model.AjunaWorker
