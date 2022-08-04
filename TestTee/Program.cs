@@ -1,6 +1,8 @@
 ﻿using Ajuna.NetApi;
 using Ajuna.NetApi.Model.AjunaWorker;
 using Ajuna.NetApi.Model.Base;
+using Ajuna.NetApi.Model.Dot4gravity;
+using Ajuna.NetApi.Model.Extrinsics;
 using Ajuna.NetApi.Model.PalletBoard;
 using Ajuna.NetApi.Model.PalletConnectfour;
 using Ajuna.NetApi.Model.PrimitiveTypes;
@@ -15,11 +17,9 @@ using Chaos.NaCl;
 using Nerdbank.Streams;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NLog;
-using NLog.Config;
-using NLog.Targets;
 using Org.BouncyCastle.Security;
 using Schnorrkel.Keys;
+using Serilog;
 using SimpleBase;
 using StreamJsonRpc;
 using System;
@@ -62,69 +62,63 @@ namespace TestTee
         public static MiniSecret MiniSecretBob => new MiniSecret(Utils.HexToByteArray("0x398f0c28f98885e046333d4a41c19cee4c37368a9832c6502f6cfd182e2aef89"), ExpandMode.Ed25519);
         public static Account Bob => Account.Build(KeyType.Sr25519, MiniSecretBob.ExpandToSecret().ToBytes(), MiniSecretBob.GetPair().Public.Key);
 
+        public static string CutStr(string str) => str.Substring(0, 10) + "...";
+
         private static async Task Main(string[] args)
         {
-            var config = new LoggingConfiguration();
-
-            // Targets where to log to: File and Console
-            var logfile = new FileTarget("logfile")
-            {
-                FileName = "log.txt",
-                DeleteOldFileOnStartup = true
-            };
-
-            var logconsole = new ConsoleTarget("logconsole");
-
-            // Rules for mapping loggers to targets            
-            //config.AddRule(LogLevel.Info, LogLevel.Fatal, logconsole);
-            config.AddRule(LogLevel.Trace, LogLevel.Fatal, logfile);
-
-            // Apply config           
-            LogManager.Configuration = config;
+            // configure serilog
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo
+                .Console()
+                .CreateLogger();
 
             // Add this to your C# console app's Main method to give yourself
             // a CancellationToken that is canceled when the user hits Ctrl+C.
             var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (s, e) =>
             {
-                Console.WriteLine("Canceling...");
+                Log.Information("Canceling...");
                 cts.Cancel();
                 e.Cancel = true;
             };
 
             try
             {
-                Console.WriteLine("Press Ctrl+C to end.");
+                Log.Information("Press Ctrl+C to end.");
                 await MainAsync(cts.Token);
             }
             catch (OperationCanceledException)
             {
                 // This is the normal way we close.
             }
+
+            // Finally, once just before the application exits...
+            Log.CloseAndFlush();
         }
 
         private static async Task MainAsync(CancellationToken cancellationToken)
         {
             var nodeUrl = "ws://127.0.0.1:9944";
-            var ngrok = "wss://183c-84-75-48-249.ngrok.io";
-            var shardHex = "Fdb2TM3owt4unpvESoSMTpVWPvCiXMzYyb42LzSsmFLi";
-            var mrenclaveHex = "Fdb2TM3owt4unpvESoSMTpVWPvCiXMzYyb42LzSsmFLi";
+            var ngrok = "ws://0082-84-75-48-249.ngrok.io";
+            var shardHex = "2WTKarArPH1jxUCCDMbLvmDKG9UiPZxfBrb2eQUWyU3K";
+            var mrenclaveHex = "2WTKarArPH1jxUCCDMbLvmDKG9UiPZxfBrb2eQUWyU3K";
 
-            await TransactionNodeTestAsync(nodeUrl);
+            //await TransactionNodeTestAsync(nodeUrl);
 
-            Thread.Sleep(10000);
+            //Thread.Sleep(10000);
 
-            await LaunchGameAsync(nodeUrl);
+            //await LaunchGameAsync(nodeUrl);
 
-            Thread.Sleep(10000);
+            //Thread.Sleep(10000);
 
-            await TransactionWorkerTestAsync(
-                websocketurl: ngrok,
-                shardHex: shardHex,
-                mrenclaveHex: mrenclaveHex
-            );
+            //await TransactionWorkerTestAsync(
+            //    websocketurl: ngrok,
+            //    shardHex: shardHex,
+            //    mrenclaveHex: mrenclaveHex
+            //);
 
-            Thread.Sleep(10000);
+            //Thread.Sleep(10000);
 
             await PlayGameAsync(
                 websocketurl: ngrok,
@@ -132,20 +126,20 @@ namespace TestTee
                 mrenclaveHex: mrenclaveHex
             );
 
-            while (true)
-            {
-                Thread.Sleep(10000);
+            //while (true)
+            //{
+            //    Thread.Sleep(10000);
 
-                await LaunchGameAsync(nodeUrl);
+            //    await LaunchGameAsync(nodeUrl);
 
-                Thread.Sleep(10000);
+            //    Thread.Sleep(10000);
 
-                await PlayGameAsync(
-                     websocketurl: ngrok,
-                     shardHex: shardHex,
-                     mrenclaveHex: mrenclaveHex
-                 );
-            }
+            //    await PlayGameAsync(
+            //         websocketurl: ngrok,
+            //         shardHex: shardHex,
+            //         mrenclaveHex: mrenclaveHex
+            //     );
+            //}
 
 
             //await BenchmarkNodeAsync("ws://127.0.0.1:9944");
@@ -162,7 +156,7 @@ namespace TestTee
         {
             var client = new SubstrateClientExt(new Uri(websocketurl));
 
-            await client.ConnectAsync(false, false, false, CancellationToken.None);
+            await client.ConnectAsync(false, false, CancellationToken.None);
 
             await client.RPCMethodsAsync();
 
@@ -172,12 +166,15 @@ namespace TestTee
 
         private static async Task TransactionNodeTestAsync(string websocketurl)
         {
+            Log.Information("*** - {name} - **********************************************************",
+                "TransactionNodeTestAsync".PadRight(30));
+
             var extrinsicWait = 10000;
 
             var client = new SubstrateClientExt(new Uri(websocketurl));
 
             var cts = new CancellationTokenSource();
-            await client.ConnectAsync(false, true, true, cts.Token);
+            await client.ConnectAsync(false, true, cts.Token);
 
             var accountAlice = new AccountId32();
             accountAlice.Create(Utils.GetPublicKeyFrom(Alice.Value));
@@ -189,10 +186,10 @@ namespace TestTee
             accountZuerich.Create(Utils.GetPublicKeyFrom("5FfzQe73TTQhmSQCgvYocrr6vh1jJXEKB8xUB6tExfpKVCEZ"));
 
             var accountInfoAlice = await client.SystemStorage.Account(accountAlice, CancellationToken.None);
-            Console.WriteLine($"Alice Free Balance = {accountInfoAlice.Data.Free.Value.ToString()}");
+            Log.Information("Alice Free Balance = {balance}", accountInfoAlice.Data.Free.Value.ToString());
 
             var accountInfoBob = await client.SystemStorage.Account(accountBob, CancellationToken.None);
-            Console.WriteLine($"Bob Free Balance = {accountInfoBob.Data.Free.Value.ToString()}");
+            Log.Information("Bob Free Balance = {balance}", accountInfoBob.Data.Free.Value.ToString());
 
             var multiAddressBob = new EnumMultiAddress();
             multiAddressBob.Create(MultiAddress.Id, accountBob);
@@ -204,15 +201,15 @@ namespace TestTee
             var extrinsicMethod = Ajuna.NetApi.Model.PalletBalances.BalancesCalls.Transfer(multiAddressBob, amount);
 
             // transaction from alice to bob for a certain amount of tokens
-            var subscription1 = await client.Author.SubmitAndWatchExtrinsicAsync(ActionExtrinsicUpdate, extrinsicMethod, Alice, 0, 64, cts.Token);
-            Console.WriteLine($"Subscription ID for Transfer {subscription1}");
+            var subscription1 = await client.Author.SubmitAndWatchExtrinsicAsync(ActionExtrinsicUpdate, extrinsicMethod, Alice, new ChargeAssetTxPayment(0, 0), 64, cts.Token);
+            Log.Information("Subscription ID for Transfer {id}", subscription1);
             Thread.Sleep(extrinsicWait);
 
             accountInfoAlice = await client.SystemStorage.Account(accountAlice, CancellationToken.None);
-            Console.WriteLine($"Alice Free Balance = {accountInfoAlice.Data.Free.Value}");
+            Log.Information("Alice Free Balance = {balance}", accountInfoAlice.Data.Free.Value);
 
             accountInfoBob = await client.SystemStorage.Account(accountBob, CancellationToken.None);
-            Console.WriteLine($"Bob Free Balance = {accountInfoBob.Data.Free.Value}");
+            Log.Information("Bob Free Balance = {balance}", accountInfoBob.Data.Free.Value);
 
 
             // move funds ...
@@ -225,12 +222,12 @@ namespace TestTee
             var extrinsicMethodZuerich = Ajuna.NetApi.Model.PalletBalances.BalancesCalls.Transfer(multiAddressZuerich, amountForZuerich);
 
             // transaction from zuerich to bob for a certain amount of tokens
-            var subscription2 = await client.Author.SubmitAndWatchExtrinsicAsync(ActionExtrinsicUpdate, extrinsicMethodZuerich, Alice, 0, 64, cts.Token);
-            Console.WriteLine($"Subscription ID for Transfer {subscription2}");
+            var subscription2 = await client.Author.SubmitAndWatchExtrinsicAsync(ActionExtrinsicUpdate, extrinsicMethodZuerich, Alice, new ChargeAssetTxPayment(0, 0), 64, cts.Token);
+            Log.Information("Subscription ID for Transfer {id}", subscription2);
             Thread.Sleep(extrinsicWait);
 
             var accountInfoZuerich = await client.SystemStorage.Account(accountZuerich, CancellationToken.None);
-            Console.WriteLine($"Zuerich Free Balance = {accountInfoZuerich.Data.Free.Value}");
+            Log.Information("Zuerich Free Balance = {balance}", accountInfoZuerich.Data.Free.Value);
 
             // close connection
             await client.CloseAsync();
@@ -239,6 +236,8 @@ namespace TestTee
 
         private static async Task TransactionWorkerTestAsync(string websocketurl, string shardHex, string mrenclaveHex)
         {
+            Log.Information("*** - {name} - **********************************************************",
+                "TransactionWorkerTestAsync".PadRight(30));
             /**
              * docker ps
              * docker exec -it 7aeac2a21f93 /bin/bash
@@ -247,7 +246,7 @@ namespace TestTee
 
             var client = new SubstrateClientExt(new Uri(websocketurl));
 
-            await client.ConnectAsync(false, false, false, CancellationToken.None);
+            await client.ConnectAsync(false, false, CancellationToken.None);
 
             var shieldingKey = await client.ShieldingKeyAsync();
 
@@ -258,7 +257,8 @@ namespace TestTee
             var player = Alice;
 
             var nonce = await client.GetNonce(player, shieldingKey, shardHex);
-            if (nonce != null) Console.WriteLine($"Nonce[{player.Value}] = {nonce.Value}");
+            if (nonce != null) 
+                Log.Information("Nonce[{player}] = {value}", CutStr(player.Value), nonce.Value);
 
             //var boardStruct1 = await client.GetBoardStructAsync(player, shieldingKey, shardHex);
             //if (boardStruct1 != null) PrintBoard(boardStruct1);
@@ -268,17 +268,20 @@ namespace TestTee
             Thread.Sleep(2000);
 
             var balance1 = await client.GetFreeBalanceAsync(player, shieldingKey, shardHex);
-            if (balance1 != null) Console.WriteLine($"Balance[{player.Value}] = {balance1.Value}");
+            if (balance1 != null)
+                Log.Information("Balance[{player}] = {balance}", CutStr(player.Value), balance1.Value);
 
             Thread.Sleep(2000);
 
-            var hash = await client.BalanceTransferAsync(Alice, Bob, (uint)100000, shieldingKey, shardHex, mrenclaveHex);
-            Console.WriteLine($"BalanceTransfer[{hash}] Alice -[100000]-> Bob");
+            var value = 100000;
+            var hash = await client.BalanceTransferAsync(Alice, Bob, (uint)value, shieldingKey, shardHex, mrenclaveHex);
+            Log.Information("BalanceTransfer[{hash}] Alice sends {value} to Bob", CutStr(hash), value);
 
             Thread.Sleep(2000);
 
             var balance2 = await client.GetFreeBalanceAsync(player, shieldingKey, shardHex);
-            if (balance2 != null) Console.WriteLine($"Balance[{player.Value}] = {balance2.Value}");
+            if (balance2 != null) 
+                Log.Information("Balance[{player}] = {balance}", CutStr(player.Value), balance2.Value);
 
             Thread.Sleep(2000);
 
@@ -291,7 +294,7 @@ namespace TestTee
             var client = new SubstrateClientExt(new Uri(websocketurl));
 
             var cts = new CancellationTokenSource();
-            await client.ConnectAsync(false, true, true, cts.Token);
+            await client.ConnectAsync(false, true, cts.Token);
 
             var accountAlice = new AccountId32();
             accountAlice.Create(Utils.GetPublicKeyFrom(Alice.Value));
@@ -324,7 +327,7 @@ namespace TestTee
              */
 
             var client = new SubstrateClientExt(new Uri(websocketurl));
-            await client.ConnectAsync(false, false, false, CancellationToken.None);
+            await client.ConnectAsync(false, false, CancellationToken.None);
             var shieldingKey = await client.ShieldingKeyAsync();
 
             var player = Alice;
@@ -369,21 +372,33 @@ namespace TestTee
                 case ExtrinsicState.None:
                     if (extrinsicUpdate.InBlock?.Value.Length > 0)
                     {
-                        Console.WriteLine($"{subscriptionId}: InBlock {extrinsicUpdate.InBlock.Value}");
+                        Log.Debug("{id}: InBlock {value}", subscriptionId, extrinsicUpdate.InBlock.Value);
                     }
                     else if (extrinsicUpdate.Finalized?.Value.Length > 0)
                     {
-                        Console.WriteLine($"{subscriptionId}: Finalized {extrinsicUpdate.Finalized.Value}");
+                        Log.Debug("{id}: Finalized {value}", subscriptionId, extrinsicUpdate.Finalized.Value);
+                    } else
+                    {
+                        Log.Debug("{id}: None", subscriptionId);
                     }
                     break;
+
                 case ExtrinsicState.Future:
+                    Log.Debug("{id}: Future", subscriptionId);
                     break;
+
                 case ExtrinsicState.Ready:
+                    Log.Debug("{id}: Ready", subscriptionId);
                     break;
+
                 case ExtrinsicState.Dropped:
+                    Log.Debug("{id}: Dropped", subscriptionId);
                     break;
+
                 case ExtrinsicState.Invalid:
+                    Log.Debug("{id}: Invalid", subscriptionId);
                     break;
+
                 default:
                     break;
             }
@@ -402,7 +417,7 @@ namespace TestTee
             var client = new SubstrateClientExt(new Uri(websocketurl));
 
             var cts = new CancellationTokenSource();
-            await client.ConnectAsync(false, true, true, cts.Token);
+            await client.ConnectAsync(false, true, cts.Token);
 
             var gameQueuePre = await client.GameRegistryStorage.Queued(CancellationToken.None);
             Console.WriteLine($"GameRegistry Queue Pre = {gameQueuePre}");
@@ -410,7 +425,7 @@ namespace TestTee
             var extrinsicMethod = Ajuna.NetApi.Model.PalletGameRegistry.GameRegistryCalls.Queue();
 
             // Alice queues for a game ...
-            var subscription1 = await client.Author.SubmitAndWatchExtrinsicAsync(ActionExtrinsicUpdate, extrinsicMethod, Alice, 0, 64, cts.Token);
+            var subscription1 = await client.Author.SubmitAndWatchExtrinsicAsync(ActionExtrinsicUpdate, extrinsicMethod, Alice, new ChargeAssetTxPayment(0, 0), 64, cts.Token);
             Console.WriteLine($"Queued Alice {subscription1}");
             Thread.Sleep(extrinsicWait);
 
@@ -421,16 +436,16 @@ namespace TestTee
             Thread.Sleep(2000);
 
             // Bob queues for a game ...
-            var subscription2 = await client.Author.SubmitAndWatchExtrinsicAsync(ActionExtrinsicUpdate, extrinsicMethod, Bob, 0, 64, cts.Token);
+            var subscription2 = await client.Author.SubmitAndWatchExtrinsicAsync(ActionExtrinsicUpdate, extrinsicMethod, Bob, new ChargeAssetTxPayment(0, 0), 64, cts.Token);
             Console.WriteLine($"Queued Bob {subscription2}");
             Thread.Sleep(extrinsicWait);
 
             // find game reference
             var gameId = await client.GameRegistryStorage.Players(accountAlice, cts.Token);
-            Console.WriteLine($"GameReference for Alice {gameId}");
+            Console.WriteLine($"GameReference for Alice {gameId.Value}");
 
             var gameIdBob = await client.GameRegistryStorage.Players(accountBob, cts.Token);
-            Console.WriteLine($"GameReference for Bob {gameIdBob}");
+            Console.WriteLine($"GameReference for Bob {gameIdBob.Value}");
 
             if (gameId.Value == gameIdBob.Value && gameIdBob.Value > 0)
             {
@@ -449,6 +464,9 @@ namespace TestTee
 
         private static async Task PlayGameAsync(string websocketurl, string shardHex, string mrenclaveHex)
         {
+            Log.Information("*** - {name} - **********************************************************",
+                "PlayGameAsync".PadRight(30));
+
             /**
              * docker ps
              * docker exec -it 7aeac2a21f93 /bin/bash
@@ -459,7 +477,7 @@ namespace TestTee
             var client = new SubstrateClientExt(new Uri(websocketurl));
 
             Console.WriteLine("*** - ConnectAsync      - ***************************************************************");
-            await client.ConnectAsync(false, false, false, CancellationToken.None);
+            await client.ConnectAsync(false, false, CancellationToken.None);
 
             Console.WriteLine("*** - ShieldingKeyAsync - ***************************************************************");
             var shieldingKey = await client.ShieldingKeyAsync();
@@ -471,9 +489,9 @@ namespace TestTee
             var d4gObj = new Dot4GObj(boardGame);
             d4gObj.Print();
 
-            while (d4gObj.GamePhase == Ajuna.NetApi.Model.Base.GamePhase.Bomb && d4gObj.Players.Where(p => p.Bombs > 0).Select(p => p).ToList().Any())
+            while (d4gObj.GamePhase == GamePhase.Bomb && d4gObj.Players.Values.Where(p => p.Bombs > 0).Select(p => p).ToList().Any())
             {
-                var bombPlayers = d4gObj.Players.Where(p => p.Bombs > 0).Select(p => p).ToList();
+                var bombPlayers = d4gObj.Players.Values.Where(p => p.Bombs > 0).Select(p => p).ToList();
                 if (bombPlayers.First().Address == Alice.Value)
                 {
                     player = Alice;
@@ -500,7 +518,7 @@ namespace TestTee
                 d4gObj.Print();
             }
 
-            while (d4gObj.GamePhase == Ajuna.NetApi.Model.Base.GamePhase.Play && d4gObj.Winner is null)
+            while (d4gObj.GamePhase == GamePhase.Play && d4gObj.Winner is null)
             {
                 var nextPlayer = d4gObj.Players[d4gObj.Next];
                 if (nextPlayer.Address == Alice.Value)
@@ -626,8 +644,7 @@ namespace TestTee
 
         private static Account GetNextPlayer(BoardGame boardGame)
         {
-            var players = boardGame.Players.Value.Value.Select(p => Utils.GetAddressFrom(p.Value.Value.Select(q => q.Value).ToArray())).ToArray();
-            var nextPlayer = players[boardGame.State.NextPlayer.Value];
+            var nextPlayer = Utils.GetAddressFrom(boardGame.State.NextPlayer.Value.Bytes);
             if (nextPlayer == Alice.Value)
             {
                 return Alice;

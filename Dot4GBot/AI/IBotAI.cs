@@ -1,6 +1,5 @@
-﻿using Ajuna.NetApi.Model.Base;
+﻿using Ajuna.NetApi.Model.Dot4gravity;
 using Ajuna.NetApiExt.Model.AjunaWorker.Dot4G;
-using System;
 
 namespace Dot4GBot.AI
 {

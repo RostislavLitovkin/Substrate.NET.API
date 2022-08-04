@@ -12,7 +12,7 @@ using Ajuna.NetApi.Model.Rpc;
 using Ajuna.NetApi.Model.SpCore;
 using Ajuna.NetApi.Model.Types;
 using Chaos.NaCl;
-using NLog;
+using Serilog;
 using Schnorrkel;
 using Schnorrkel.Keys;
 
@@ -29,8 +29,6 @@ namespace Ajuna.NetWallet
         private const string FileType = "dat";
 
         private const string DefaultWalletName = "wallet";
-
-        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
         private readonly CancellationTokenSource _connectTokenSource;
 
@@ -144,14 +142,14 @@ namespace Ajuna.NetWallet
         {
             if (!IsValidWalletName(walletName))
             {
-                Logger.Warn("Wallet name is invalid, please provide a proper wallet name. [A-Za-Z_]{20}.");
+                Log.Warning("Wallet name is invalid, please provide a proper wallet name. [A-Za-Z_]{20}.");
                 return false;
             }
 
             var walletFileName = AddWalletFileType(walletName);
             if (!Caching.TryReadFile(walletFileName, out _walletFile))
             {
-                Logger.Warn($"Failed to load wallet file '{walletFileName}'!");
+                Log.Warning("Failed to load wallet file '{file}'!", walletFileName);
                 return false;
             }
 
@@ -169,18 +167,18 @@ namespace Ajuna.NetWallet
         {
             if (IsCreated)
             {
-                Logger.Warn("Wallet already created.");
+                Log.Warning("Wallet already created.");
                 return true;
             }
 
             if (!IsValidPassword(password))
             {
-                Logger.Warn(
+                Log.Warning(
                     "Password isn't is invalid, please provide a proper password. Minmimu eight size and must have upper, lower and digits.");
                 return false;
             }
 
-            Logger.Info("Creating new wallet from mnemonic.");
+            Log.Information("Creating new wallet from mnemonic.");
 
             var seed = Mnemonic.GetSecretKeyFromMnemonic(mnemonic, "Substrate", Mnemonic.BIP39Wordlist.English);
 
@@ -224,18 +222,18 @@ namespace Ajuna.NetWallet
         {
             if (IsCreated)
             {
-                Logger.Warn("Wallet already created.");
+                Log.Warning("Wallet already created.");
                 return true;
             }
 
             if (!IsValidPassword(password))
             {
-                Logger.Warn(
+                Log.Warning(
                     "Password isn't is invalid, please provide a proper password. Minmimu eight size and must have upper, lower and digits.");
                 return false;
             }
 
-            Logger.Info("Creating new wallet.");
+            Log.Information("Creating new wallet.");
 
             var randomBytes = new byte[48];
 
@@ -280,11 +278,11 @@ namespace Ajuna.NetWallet
         {
             if (IsUnlocked || !IsCreated)
             {
-                Logger.Warn("Wallet is already unlocked or doesn't exist.");
+                Log.Warning("Wallet is already unlocked or doesn't exist.");
                 return IsUnlocked && IsCreated;
             }
 
-            Logger.Info("Unlock new wallet.");
+            Log.Information("Unlock new wallet.");
 
             try
             {
@@ -314,9 +312,9 @@ namespace Ajuna.NetWallet
 
                 Account = Account.Build(_walletFile.KeyType, privateKey, publicKey);
             }
-            catch (Exception exception)
+            catch (Exception e)
             {
-                Logger.Warn($"Couldn't unlock the wallet with this password. {exception}");
+                Log.Warning("Couldn't unlock the wallet with this password. {exception}", e);
                 return false;
             }
 
@@ -340,7 +338,7 @@ namespace Ajuna.NetWallet
 
             if (signer?.PrivateKey == null)
             {
-                Logger.Warn("Account or private key doesn't exists.");
+                Log.Warning("Account or private key doesn't exists.");
                 return false;
             }
 
@@ -400,7 +398,7 @@ namespace Ajuna.NetWallet
         /// <param name="webSocketUrl">The web socket URL.</param>
         private async Task ConnectAsync(string webSocketUrl)
         {
-            Logger.Info($"Connecting to {webSocketUrl}");
+            Log.Information("Connecting to {url}", webSocketUrl);
 
             Client = new SubstrateClientExt(new Uri(webSocketUrl));
 
@@ -408,7 +406,7 @@ namespace Ajuna.NetWallet
 
             if (!IsConnected)
             {
-                Logger.Error("Connection couldn't be established!");
+                Log.Error("Connection couldn't be established!");
                 return;
             }
 
@@ -420,7 +418,7 @@ namespace Ajuna.NetWallet
 
             ChainInfo = new ChainInfo(systemName, systemVersion, systemChain, Client.RuntimeVersion);
 
-            Logger.Info($"Connection established to {ChainInfo}");
+            Log.Information("Connection established to {chain}", ChainInfo);
         }
 
         /// <summary>
@@ -432,7 +430,7 @@ namespace Ajuna.NetWallet
             // disconnect from node if we are already connected to one.
             if (IsConnected)
             {
-                Logger.Warn($"Wallet already connected, disconnecting from {ChainInfo} now");
+                Log.Warning("Wallet already connected, disconnecting from {chain} now", ChainInfo);
                 await StopAsync();
             }
 
@@ -441,7 +439,7 @@ namespace Ajuna.NetWallet
 
             if (IsConnected)
             {
-                Logger.Warn("Starting subscriptions now.");
+                Log.Warning("Starting subscriptions now.");
                 await RefreshSubscriptionsAsync();
             }
         }
@@ -451,7 +449,7 @@ namespace Ajuna.NetWallet
         /// </summary>
         public async Task RefreshSubscriptionsAsync()
         {
-            Logger.Info("Refreshing all subscriptions");
+            Log.Information("Refreshing all subscriptions");
 
             // unsubscribe all subscriptions
             await UnsubscribeAllAsync();
@@ -478,7 +476,7 @@ namespace Ajuna.NetWallet
             {
                 // unsubscribe from new heads
                 if (!await Client.Chain.UnsubscribeNewHeadsAsync(_subscriptionIdNewHead, _connectTokenSource.Token))
-                    Logger.Warn($"Couldn't unsubscribe new heads {_subscriptionIdNewHead} id.");
+                    Log.Warning("Couldn't unsubscribe new heads {id} id.", _subscriptionIdNewHead);
                 _subscriptionIdNewHead = string.Empty;
             }
 
@@ -487,7 +485,7 @@ namespace Ajuna.NetWallet
                 // unsubscribe from finalized heads
                 if (!await Client.Chain.UnsubscribeFinalizedHeadsAsync(_subscriptionIdFinalizedHeads,
                     _connectTokenSource.Token))
-                    Logger.Warn($"Couldn't unsubscribe finalized heads {_subscriptionIdFinalizedHeads} id.");
+                    Log.Warning("Couldn't unsubscribe finalized heads {heads} id.", _subscriptionIdFinalizedHeads);
                 _subscriptionIdFinalizedHeads = string.Empty;
             }
 
@@ -495,7 +493,7 @@ namespace Ajuna.NetWallet
             {
                 // unsubscribe from finalized heads
                 if (!await Client.State.UnsubscribeStorageAsync(_subscriptionAccountInfo, _connectTokenSource.Token))
-                    Logger.Warn($"Couldn't unsubscribe storage subscription {_subscriptionAccountInfo} id.");
+                    Log.Warning("Couldn't unsubscribe storage subscription {info} id.", _subscriptionAccountInfo);
                 _subscriptionAccountInfo = string.Empty;
             }
         }
@@ -555,7 +553,7 @@ namespace Ajuna.NetWallet
                 || storageChangeSet.Changes.Length == 0 
                 || storageChangeSet.Changes[0].Length < 2)
             {
-                Logger.Warn("Couldn't update account informations. Please check 'CallBackAccountChange'");
+                Log.Warning("Couldn't update account informations. Please check 'CallBackAccountChange'");
                 return;
             }
 
@@ -563,7 +561,7 @@ namespace Ajuna.NetWallet
 
             if (string.IsNullOrEmpty(accountInfoStr))
             {
-                Logger.Warn("Couldn't update account informations. Account doesn't exists, please check 'CallBackAccountChange'");
+                Log.Warning("Couldn't update account informations. Account doesn't exists, please check 'CallBackAccountChange'");
                 return;
             }
 

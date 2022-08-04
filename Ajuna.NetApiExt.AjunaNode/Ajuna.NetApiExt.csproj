@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ajuna.NetApi\Ajuna.NetApi.csproj" />
+    <ProjectReference Include="..\..\Ajuna.NetApi - Orginal\Ajuna.NetApi\Ajuna.NetApi.csproj" />
   </ItemGroup>
 
 </Project>

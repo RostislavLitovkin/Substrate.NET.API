@@ -19,7 +19,7 @@ using Ajuna.NetApi.Model.Types.Base;
 using Ajuna.NetApi.Model.Types.Primitive;
 using Ajuna.NetApiExt.Model.AjunaWorker.Helper;
 using Newtonsoft.Json;
-using NLog;
+using Serilog;
 using Org.BouncyCastle.Security;
 using SimpleBase;
 using System;
@@ -36,9 +36,6 @@ namespace Ajuna.NetApi
 
     public sealed class SubstrateClientExt : Ajuna.NetApi.SubstrateClient
     {
-        /// <summary> The logger. </summary>
-        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
-
         /// <summary>
         /// StorageKeyDict for key definition informations.
         /// </summary>
@@ -247,7 +244,7 @@ namespace Ajuna.NetApi
                     var byteArray = returnValue.Value.Bytes;
                     var converter = new UTF8Encoding();
                     var str = converter.GetString(UnwrapBytes(byteArray));
-                    Logger.Error($"DirectRequestStatus {returnValue.DirectRequestStatus.Value}: {str}");
+                    Log.Error("DirectRequestStatus {value}: {string}", returnValue.DirectRequestStatus.Value, str);
                     break;
 
             }
@@ -261,7 +258,7 @@ namespace Ajuna.NetApi
             var nonceValue = await ExecuteTrustedOperationAsync(tOpNonce, shieldingKey, shardHex);
             if (Unwrap(Wrapped.Nonce, nonceValue, out U32 nonce))
             {
-                Logger.Info($"Account[{fromAccount.Value}]({nonce.Value}) transfers {amount} to Account[{toAccount.Value}]");
+                Log.Information("Account[{value}]({nonce}) transfers {amount} to Account[{value}]", fromAccount.Value, nonce.Value, amount, toAccount.Value);
                 EnumTrustedOperation tOpTransfer = Wrapper.CreateCallBalanceTransfer(fromAccount, toAccount, amount, nonce.Value, mrenclaveHex, shardHex);
                 var returnValue = await ExecuteTrustedOperationAsync(tOpTransfer, shieldingKey, shardHex);
                 if (Unwrap(Wrapped.Hash, returnValue, out H256 value))
@@ -280,7 +277,7 @@ namespace Ajuna.NetApi
             var nonceValue = await ExecuteTrustedOperationAsync(tOpNonce, shieldingKey, shardHex);
             if (Unwrap(Wrapped.Nonce, nonceValue, out U32 nonce))
             {
-                Logger.Info($"Account[{account.Value}]({nonce.Value}) play {turn.GetType().Name}");
+                Log.Information("Account[{value}]({nonce}) play {name}", account.Value, nonce.Value, turn.GetType().Name);
                 EnumTrustedOperation tOpPlayTurn = Wrapper.CreateCallPlayTurn(account, turn, nonce.Value, mrenclaveHex, shardHex);
                 var returnValue = await ExecuteTrustedOperationAsync(tOpPlayTurn, shieldingKey, shardHex);
                 if (Unwrap(Wrapped.Hash, returnValue, out H256 value))

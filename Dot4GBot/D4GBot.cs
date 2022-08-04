@@ -1,5 +1,6 @@
 ﻿using Ajuna.NetApi.Model.AjunaCommon;
 using Ajuna.NetApi.Model.Base;
+using Ajuna.NetApi.Model.Dot4gravity;
 using Ajuna.NetApiExt.Model.AjunaWorker.Dot4G;
 using Ajuna.NetWallet;
 using Ajuna.UnityInterface;
@@ -143,7 +144,7 @@ namespace Dot4GBot
                         }
                         else if (gameBoard.GamePhase == GamePhase.Bomb)
                         {
-                            var player = gameBoard.Players.Where(p => p.Address == Wallet.Account.Value).ToList();
+                            var player = gameBoard.Players.Values.Where(p => p.Address == Wallet.Account.Value).ToList();
                             if (player.Count == 1 && player[0].Bombs > 0)
                             {
                                 workerState = ChangeWorkerState(workerState, WorkerState.Bomb);

@@ -19,8 +19,8 @@ namespace Dot4GBot
     partial class Program
     {
         private static string _nodeUrl = "ws://127.0.0.1:9944";
-        private static string _ngrokUrl = "ws://030a-84-75-48-249.ngrok.io";
-        private static string _mrenclave = "Fdb2TM3owt4unpvESoSMTpVWPvCiXMzYyb42LzSsmFLi";
+        private static string _ngrokUrl = "ws://0082-84-75-48-249.ngrok.io";
+        private static string _mrenclave = "2WTKarArPH1jxUCCDMbLvmDKG9UiPZxfBrb2eQUWyU3K";
         private static Random _random = new Random();
 
         private static async Task Main(string[] args)
@@ -66,6 +66,9 @@ namespace Dot4GBot
                 _mrenclave = mrenclave;
             }
             Console.WriteLine($"=> '{_mrenclave}'");
+
+            Console.WriteLine($"Let's play!");
+            Thread.Sleep(1000);
 
             // Add this to your C# console app's Main method to give yourself
             // a CancellationToken that is canceled when the user hits Ctrl+C.

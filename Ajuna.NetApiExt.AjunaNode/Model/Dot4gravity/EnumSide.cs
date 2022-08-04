@@ -12,7 +12,7 @@ using System;
 using System.Collections.Generic;
 
 
-namespace Ajuna.NetApi.Model.Base
+namespace Ajuna.NetApi.Model.Dot4gravity
 {
     
     

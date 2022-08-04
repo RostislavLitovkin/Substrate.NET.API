@@ -1,5 +1,6 @@
 ﻿using Ajuna.NetApi;
 using Ajuna.NetApi.Model.Base;
+using Ajuna.NetApi.Model.Dot4gravity;
 using Ajuna.NetApi.Model.PalletBoard;
 using Ajuna.NetApi.Model.SpCore;
 using Ajuna.NetApi.Model.Types.Primitive;
@@ -19,15 +20,15 @@ namespace Ajuna.NetApiExt.Model.AjunaWorker.Dot4G
 
         public Dot4GCell[,] Board { get; set; }
 
-        public List<Dot4GPlayer> Players { get; set; } = new List<Dot4GPlayer>();
+        public Dictionary<string, Dot4GPlayer> Players { get; set; } = new Dictionary<string, Dot4GPlayer>();
 
         public GamePhase GamePhase { get; }
 
-        public int Next { get; }
+        public string Next { get; }
 
         public Dot4GPlayer NextPlayer => Players[Next];
 
-        public int? Winner { get; }
+        public string Winner { get; }
 
         public List<(Side, int)> PossibleMoves { get; }
 
@@ -37,23 +38,23 @@ namespace Ajuna.NetApiExt.Model.AjunaWorker.Dot4G
         {
             foreach (var player in boardGame.State.Players.Value.Select(p => Utils.GetAddressFrom(p.Value.Value.Select(q => q.Value).ToArray())))
             {
-                Players.Add(new Dot4GPlayer(GetPlayername(player), player));
+                Players.Add(player, new Dot4GPlayer(GetPlayername(player), player));
             }
             GamePhase = boardGame.State.Phase.Value;
             Id = (int) boardGame.BoardId.Value;
             Seed = (int)boardGame.State.Seed.Value;
-            Winner = boardGame.State.Winner.OptionFlag ? boardGame.State.Winner.Value.Value : (int?)null;
+            Winner = boardGame.State.Winner.OptionFlag ? Utils.GetAddressFrom(boardGame.State.Winner.Value.Value.Bytes) : null;
 
             foreach (var bomb in boardGame.State.Bombs.Value.ToList())
             {
-                var player = Players.Where(p => p.Address == Utils.GetAddressFrom(((AccountId32)bomb.Value[0]).Value.Value.Select(q => q.Value).ToArray())).FirstOrDefault();
+                var player = Players.Values.Where(p => p.Address == Utils.GetAddressFrom(((AccountId32)bomb.Value[0]).Value.Value.Select(q => q.Value).ToArray())).FirstOrDefault();
                 if (player != null)
                 {
                     player.Bombs = ((U8)bomb.Value[1]).Value;
                 }
             }
 
-            Next = boardGame.State.NextPlayer.Value;
+            Next = Utils.GetAddressFrom(boardGame.State.NextPlayer.Value.Bytes);
 
             EnumCell[][] array = boardGame.State.Board.Cells.Value.Select(p => p.Value).ToArray();
 
@@ -217,8 +218,8 @@ namespace Ajuna.NetApiExt.Model.AjunaWorker.Dot4G
             Console.WriteLine("+---------------------------------------+");
             Console.WriteLine("| " + $"Board[{Id}|{Seed}] Phase: {GamePhase}".PadRight(38) + "|");
             Console.WriteLine("| " + $"Empty[{EmptySlots.Count}] - Moves[{PossibleMoves.Count}]".PadRight(38) + "|");
-            Players.ForEach(p => Console.WriteLine("| " + p.ToString().PadRight(38) + "|"));
-            Console.WriteLine("| " + $"Next: {Players[Next].Name}".PadRight(38) + "|");
+            Players.Values.ToList().ForEach(p => Console.WriteLine("| " + p.ToString().PadRight(38) + "|"));
+            Console.WriteLine("| " + $"Next: {GetPlayername(Players[Next].Name)}".PadRight(38) + "|");
             Console.WriteLine("| " + $"Winner: {Winner}".PadRight(38) + "|");
             for (int i = 0; i < Board.GetLength(0); i++)
             {

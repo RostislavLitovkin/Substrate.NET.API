@@ -7,98 +7,98 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using Ajuna.NetApi.Model.Base;
-using Ajuna.NetApi.Model.FrameSupport;
+using Ajuna.NetApi.Model.Dot4gravity;
+using Ajuna.NetApi.Model.SpCore;
 using Ajuna.NetApi.Model.Types.Base;
 using Ajuna.NetApi.Model.Types.Primitive;
 using System;
 using System.Collections.Generic;
 
 
-namespace Ajuna.NetApi.Model.PalletBoard
+namespace Ajuna.NetApi.Model.Dot4gravity
 {
     
     
     /// <summary>
-    /// >> 209 - Composite[pallet_ajuna_board.BoardGame]
+    /// >> 226 - Composite[dot4gravity.LastMove]
     /// </summary>
-    public sealed class BoardGame : BaseType
+    public sealed class LastMove : BaseType
     {
         
         /// <summary>
-        /// >> board_id
+        /// >> player
         /// </summary>
-        private Ajuna.NetApi.Model.Types.Primitive.U32 _boardId;
+        private Ajuna.NetApi.Model.SpCore.AccountId32 _player;
         
         /// <summary>
-        /// >> players
+        /// >> side
         /// </summary>
-        private Ajuna.NetApi.Model.FrameSupport.BoundedVecT6 _players;
+        private Ajuna.NetApi.Model.Dot4gravity.EnumSide _side;
         
         /// <summary>
-        /// >> state
+        /// >> position
         /// </summary>
-        private Ajuna.NetApi.Model.Dot4gravity.GameState _state;
+        private Ajuna.NetApi.Model.Types.Primitive.U8 _position;
         
-        public Ajuna.NetApi.Model.Types.Primitive.U32 BoardId
+        public Ajuna.NetApi.Model.SpCore.AccountId32 Player
         {
             get
             {
-                return this._boardId;
+                return this._player;
             }
             set
             {
-                this._boardId = value;
+                this._player = value;
             }
         }
         
-        public Ajuna.NetApi.Model.FrameSupport.BoundedVecT6 Players
+        public Ajuna.NetApi.Model.Dot4gravity.EnumSide Side
         {
             get
             {
-                return this._players;
+                return this._side;
             }
             set
             {
-                this._players = value;
+                this._side = value;
             }
         }
         
-        public Ajuna.NetApi.Model.Dot4gravity.GameState State
+        public Ajuna.NetApi.Model.Types.Primitive.U8 Position
         {
             get
             {
-                return this._state;
+                return this._position;
             }
             set
             {
-                this._state = value;
+                this._position = value;
             }
         }
         
         public override string TypeName()
         {
-            return "BoardGame";
+            return "LastMove";
         }
         
         public override byte[] Encode()
         {
             var result = new List<byte>();
-            result.AddRange(BoardId.Encode());
-            result.AddRange(Players.Encode());
-            result.AddRange(State.Encode());
+            result.AddRange(Player.Encode());
+            result.AddRange(Side.Encode());
+            result.AddRange(Position.Encode());
             return result.ToArray();
         }
         
         public override void Decode(byte[] byteArray, ref int p)
         {
             var start = p;
-            BoardId = new Ajuna.NetApi.Model.Types.Primitive.U32();
-            BoardId.Decode(byteArray, ref p);
-            Players = new Ajuna.NetApi.Model.FrameSupport.BoundedVecT6();
-            Players.Decode(byteArray, ref p);
-            State = new Ajuna.NetApi.Model.Dot4gravity.GameState();
-            State.Decode(byteArray, ref p);
+            Player = new Ajuna.NetApi.Model.SpCore.AccountId32();
+            Player.Decode(byteArray, ref p);
+            Side = new Ajuna.NetApi.Model.Dot4gravity.EnumSide();
+            Side.Decode(byteArray, ref p);
+            Position = new Ajuna.NetApi.Model.Types.Primitive.U8();
+            Position.Decode(byteArray, ref p);
             TypeSize = p - start;
         }
     }

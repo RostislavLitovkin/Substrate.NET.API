@@ -8,13 +8,15 @@
 //------------------------------------------------------------------------------
 
 using Ajuna.NetApi.Model.Base;
+using Ajuna.NetApi.Model.Dot4gravity;
+using Ajuna.NetApi.Model.SpCore;
 using Ajuna.NetApi.Model.Types.Base;
 using Ajuna.NetApi.Model.Types.Primitive;
 using System;
 using System.Collections.Generic;
 
 
-namespace Ajuna.NetApi.Model.Base
+namespace Ajuna.NetApi.Model.Dot4gravity
 {
     
     
@@ -32,22 +34,22 @@ namespace Ajuna.NetApi.Model.Base
         /// <summary>
         /// >> board
         /// </summary>
-        private Ajuna.NetApi.Model.Base.Board _board;
+        private Ajuna.NetApi.Model.Dot4gravity.Board _board;
         
         /// <summary>
         /// >> phase
         /// </summary>
-        private Ajuna.NetApi.Model.Base.EnumGamePhase _phase;
+        private Ajuna.NetApi.Model.Dot4gravity.EnumGamePhase _phase;
         
         /// <summary>
         /// >> winner
         /// </summary>
-        private BaseOpt<Ajuna.NetApi.Model.Types.Primitive.U8> _winner;
+        private BaseOpt<Ajuna.NetApi.Model.SpCore.AccountId32> _winner;
         
         /// <summary>
         /// >> next_player
         /// </summary>
-        private Ajuna.NetApi.Model.Types.Primitive.U8 _nextPlayer;
+        private Ajuna.NetApi.Model.SpCore.AccountId32 _nextPlayer;
         
         /// <summary>
         /// >> players
@@ -58,6 +60,11 @@ namespace Ajuna.NetApi.Model.Base
         /// >> bombs
         /// </summary>
         private Ajuna.NetApi.Model.Base.Arr2Special3 _bombs;
+        
+        /// <summary>
+        /// >> last_move
+        /// </summary>
+        private BaseOpt<Ajuna.NetApi.Model.Dot4gravity.LastMove> _lastMove;
         
         public Ajuna.NetApi.Model.Types.Primitive.U32 Seed
         {
@@ -71,7 +78,7 @@ namespace Ajuna.NetApi.Model.Base
             }
         }
         
-        public Ajuna.NetApi.Model.Base.Board Board
+        public Ajuna.NetApi.Model.Dot4gravity.Board Board
         {
             get
             {
@@ -83,7 +90,7 @@ namespace Ajuna.NetApi.Model.Base
             }
         }
         
-        public Ajuna.NetApi.Model.Base.EnumGamePhase Phase
+        public Ajuna.NetApi.Model.Dot4gravity.EnumGamePhase Phase
         {
             get
             {
@@ -95,7 +102,7 @@ namespace Ajuna.NetApi.Model.Base
             }
         }
         
-        public BaseOpt<Ajuna.NetApi.Model.Types.Primitive.U8> Winner
+        public BaseOpt<Ajuna.NetApi.Model.SpCore.AccountId32> Winner
         {
             get
             {
@@ -107,7 +114,7 @@ namespace Ajuna.NetApi.Model.Base
             }
         }
         
-        public Ajuna.NetApi.Model.Types.Primitive.U8 NextPlayer
+        public Ajuna.NetApi.Model.SpCore.AccountId32 NextPlayer
         {
             get
             {
@@ -143,6 +150,18 @@ namespace Ajuna.NetApi.Model.Base
             }
         }
         
+        public BaseOpt<Ajuna.NetApi.Model.Dot4gravity.LastMove> LastMove
+        {
+            get
+            {
+                return this._lastMove;
+            }
+            set
+            {
+                this._lastMove = value;
+            }
+        }
+        
         public override string TypeName()
         {
             return "GameState";
@@ -158,6 +177,7 @@ namespace Ajuna.NetApi.Model.Base
             result.AddRange(NextPlayer.Encode());
             result.AddRange(Players.Encode());
             result.AddRange(Bombs.Encode());
+            result.AddRange(LastMove.Encode());
             return result.ToArray();
         }
         
@@ -166,18 +186,20 @@ namespace Ajuna.NetApi.Model.Base
             var start = p;
             Seed = new Ajuna.NetApi.Model.Types.Primitive.U32();
             Seed.Decode(byteArray, ref p);
-            Board = new Ajuna.NetApi.Model.Base.Board();
+            Board = new Ajuna.NetApi.Model.Dot4gravity.Board();
             Board.Decode(byteArray, ref p);
-            Phase = new Ajuna.NetApi.Model.Base.EnumGamePhase();
+            Phase = new Ajuna.NetApi.Model.Dot4gravity.EnumGamePhase();
             Phase.Decode(byteArray, ref p);
-            Winner = new BaseOpt<Ajuna.NetApi.Model.Types.Primitive.U8>();
+            Winner = new BaseOpt<Ajuna.NetApi.Model.SpCore.AccountId32>();
             Winner.Decode(byteArray, ref p);
-            NextPlayer = new Ajuna.NetApi.Model.Types.Primitive.U8();
+            NextPlayer = new Ajuna.NetApi.Model.SpCore.AccountId32();
             NextPlayer.Decode(byteArray, ref p);
             Players = new Ajuna.NetApi.Model.Base.Arr2AccountId32();
             Players.Decode(byteArray, ref p);
             Bombs = new Ajuna.NetApi.Model.Base.Arr2Special3();
             Bombs.Decode(byteArray, ref p);
+            LastMove = new BaseOpt<Ajuna.NetApi.Model.Dot4gravity.LastMove>();
+            LastMove.Decode(byteArray, ref p);
             TypeSize = p - start;
         }
     }

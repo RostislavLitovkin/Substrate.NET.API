@@ -1,13 +1,11 @@
 ﻿using System;
 using Newtonsoft.Json;
-using NLog;
+using Serilog;
 
 namespace Ajuna.NetWallet
 {
     public class Caching
     {
-        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
-
         /// <summary>
         /// Tries the read file.
         /// </summary>
@@ -27,7 +25,7 @@ namespace Ajuna.NetWallet
             }
             catch (Exception e)
             {
-                Logger.Error($"TryReadFile<{obj?.GetType()}>: {e}");
+                Log.Error("TryReadFile<{type}>: {exception}", obj?.GetType(), e);
                 return false;
             }
         }

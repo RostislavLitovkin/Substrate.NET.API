@@ -1,4 +1,5 @@
 ﻿using Ajuna.NetApi.Model.Base;
+using Ajuna.NetApi.Model.Dot4gravity;
 using System;
 using System.Collections.Generic;
 using System.Linq;

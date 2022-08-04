@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Ajuna.NetApi - Orginal\Ajuna.NetApi\Ajuna.NetApi.csproj" />
     <ProjectReference Include="..\Ajuna.NetWallet\Ajuna.NetWallet.csproj" />
   </ItemGroup>
 

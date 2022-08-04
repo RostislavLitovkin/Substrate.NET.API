@@ -2,6 +2,8 @@
 using Ajuna.NetApi.Model.AjunaCommon;
 using Ajuna.NetApi.Model.AjunaWorker;
 using Ajuna.NetApi.Model.Base;
+using Ajuna.NetApi.Model.Dot4gravity;
+using Ajuna.NetApi.Model.Extrinsics;
 using Ajuna.NetApi.Model.Rpc;
 using Ajuna.NetApi.Model.SpCore;
 using Ajuna.NetApi.Model.SpRuntime;
@@ -65,7 +67,7 @@ namespace Ajuna.UnityInterface
         {
             if (!IsTeeConnected)
             {
-                await _workerClient.ConnectAsync(false, false, false, CancellationToken.None);
+                await _workerClient.ConnectAsync(false, false, CancellationToken.None);
             }
 
             if(_shieldingKey.Modulus == null)
@@ -169,7 +171,7 @@ namespace Ajuna.UnityInterface
 
             var cts = new CancellationTokenSource();
             var extrinsicMethod = Ajuna.NetApi.Model.PalletGameRegistry.GameRegistryCalls.Queue();
-            var subscription = await Wallet.Client.Author.SubmitAndWatchExtrinsicAsync(ActionExtrinsicUpdate, extrinsicMethod, Wallet.Account, 0, 64, cts.Token);
+            var subscription = await Wallet.Client.Author.SubmitAndWatchExtrinsicAsync(ActionExtrinsicUpdate, extrinsicMethod, Wallet.Account, new ChargeAssetTxPayment(0, 0), 64, cts.Token);
             if (subscription != null)
             {
                 _extrinsicStates.Add(subscription, "Queue");
@@ -214,7 +216,7 @@ namespace Ajuna.UnityInterface
             var extrinsicMethod = Ajuna.NetApi.Model.PalletBalances.BalancesCalls.Transfer(multiAddressBob, amount);
 
             var cts = new CancellationTokenSource();
-            var subscription = await Wallet.Client.Author.SubmitAndWatchExtrinsicAsync(ActionExtrinsicUpdate, extrinsicMethod, Alice, 0, 64, cts.Token);
+            var subscription = await Wallet.Client.Author.SubmitAndWatchExtrinsicAsync(ActionExtrinsicUpdate, extrinsicMethod, Alice, new ChargeAssetTxPayment(0, 0), 64, cts.Token);
             if (subscription != null)
             {
                 _extrinsicStates.Add(subscription, "Faucet");
