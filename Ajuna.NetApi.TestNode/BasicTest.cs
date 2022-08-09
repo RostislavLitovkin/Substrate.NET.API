@@ -53,7 +53,7 @@ namespace Ajuna.NetApi.TestNode
             await _substrateClient.ConnectAsync(false, CancellationToken.None);
 
             var result = await _substrateClient.GetMethodAsync<string>("system_chain");
-            Assert.AreEqual("Development", result);
+            Assert.AreEqual("Ajuna Dev Testnet", result);
 
             await _substrateClient.CloseAsync();
         }
@@ -73,7 +73,7 @@ namespace Ajuna.NetApi.TestNode
         /// >> Account
         ///  The full account information for a particular account ID.
         /// </summary>
-        public async Task<AccountInfo> AccountInfo(SubstrateClient _client, AccountId32 key, CancellationToken token)
+        public async Task<AccountInfo> AccountInfoAsync(SubstrateClient _client, AccountId32 key, CancellationToken token)
         {
             string parameters = AccountParams(key);
             return await _client.GetStorageAsync<AccountInfo>(parameters, token);
@@ -87,7 +87,7 @@ namespace Ajuna.NetApi.TestNode
             var account32 = new AccountId32();
             account32.Create(Utils.GetPublicKeyFrom(Alice.Value));
 
-            var result = await AccountInfo(_substrateClient, account32, CancellationToken.None);
+            var result = await AccountInfoAsync(_substrateClient, account32, CancellationToken.None);
 
             Assert.IsTrue(result != null);
             Assert.AreEqual("999998999999874999852", result.Data.Free.Value.ToString());
