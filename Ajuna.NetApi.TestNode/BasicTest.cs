@@ -1,5 +1,8 @@
+using Ajuna.NetApi.Model.FrameSystem;
 using Ajuna.NetApi.Model.Rpc;
+using Ajuna.NetApi.Model.SpCore;
 using Ajuna.NetApi.Model.Types;
+using Ajuna.NetApi.Model.Types.Base;
 using NUnit.Framework;
 using Schnorrkel.Keys;
 using System;
@@ -51,6 +54,43 @@ namespace Ajuna.NetApi.TestNode
 
             var result = await _substrateClient.GetMethodAsync<string>("system_chain");
             Assert.AreEqual("Development", result);
+
+            await _substrateClient.CloseAsync();
+        }
+
+        /// <summary>
+        /// >> AccountParams
+        ///  The full account information for a particular account ID.
+        /// </summary>
+        public static string AccountParams(AccountId32 key)
+        {
+            return RequestGenerator.GetStorage("System", "Account", Model.Meta.Storage.Type.Map, new Model.Meta.Storage.Hasher[] {
+                        Model.Meta.Storage.Hasher.BlakeTwo128Concat}, new IType[] {
+                        key});
+        }
+
+        /// <summary>
+        /// >> Account
+        ///  The full account information for a particular account ID.
+        /// </summary>
+        public async Task<AccountInfo> AccountInfo(SubstrateClient _client, AccountId32 key, CancellationToken token)
+        {
+            string parameters = AccountParams(key);
+            return await _client.GetStorageAsync<AccountInfo>(parameters, token);
+        }
+
+        [Test]
+        public async Task GetBalanceTestAsync()
+        {
+            await _substrateClient.ConnectAsync(false, CancellationToken.None);
+
+            var account32 = new AccountId32();
+            account32.Create(Utils.GetPublicKeyFrom(Alice.Value));
+
+            var result = await AccountInfo(_substrateClient, account32, CancellationToken.None);
+
+            Assert.IsTrue(result != null);
+            Assert.AreEqual("999998999999874999852", result.Data.Free.Value.ToString());
 
             await _substrateClient.CloseAsync();
         }
